@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Retro Shooter</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; background: #111; }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let player = { x: canvas.width/2, y: canvas.height/2, size: 20, speed: 5 };
+let bullets = [];
+let enemies = [];
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp') player.y -= player.speed;
+    if (e.key === 'ArrowDown') player.y += player.speed;
+    if (e.key === 'ArrowLeft') player.x -= player.speed;
+    if (e.key === 'ArrowRight') player.x += player.speed;
+    if (e.key === ' ') {
+        bullets.push({ x: player.x, y: player.y, size: 5, speed: 7 });
+    }
+});
+
+function spawnEnemy() {
+    enemies.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 20
+    });
+}
+
+setInterval(spawnEnemy, 2000);
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw player
+    ctx.fillStyle = 'lime';
+    ctx.fillRect(player.x - player.size/2, player.y - player.size/2, player.size, player.size);
+
+    // Draw bullets
+    ctx.fillStyle = 'yellow';
+    bullets.forEach((b, index) => {
+        b.y -= b.speed;
+        ctx.fillRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+        if (b.y < 0) bullets.splice(index, 1);
+    });
+
+    // Draw enemies
+    ctx.fillStyle = 'red';
+    enemies.forEach((enemy, eIndex) => {
+        ctx.fillRect(enemy.x - enemy.size/2, enemy.y - enemy.size/2, enemy.size, enemy.size);
+        // Check collision with bullets
+        bullets.forEach((bullet, bIndex) => {
+            if (Math.abs(bullet.x - enemy.x) < enemy.size/2 && Math.abs(bullet.y - enemy.y) < enemy.size/2) {
+                enemies.splice(eIndex, 1);
+                bullets.splice(bIndex, 1);
+            }
+        });
+    });
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
